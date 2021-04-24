@@ -1,8 +1,7 @@
 #!/bin/bash
-for((i = 5001; i < 5006; i++))
+for((i = $1; i <= ($1 + $2); i++))
 do
 	python3 main.py "$i" &
 done
-
 
 

@@ -3,14 +3,14 @@ import sys
 
 addresses = []
 
-count = int(sys.argv[1])
-for x in range(count):
-    port = 5000 + x+1
-    URL = f"http://127.0.0.1:{port}"
+start_port = int(sys.argv[1])
+count = int(sys.argv[2])+1
+for index in range(count):
+    URL = f"http://127.0.0.1:{start_port + index}"
     addresses.append(URL)
 
 response = {
     "nodes": addresses
 }
 for node_addr in addresses:
-    r = requests.post(f"{node_addr}/nodes/register", json = response)
+    r = requests.post(f"{node_addr}/nodes/register", json=response)

@@ -33,6 +33,7 @@ class Blockchain(object):
         # append the block and return it
         self.chain.append(block)
         self.current_transactions = []
+
         return block
 
     def register_node(self, address):
@@ -40,7 +41,7 @@ class Blockchain(object):
         self.nodes.add(parsed_url.netloc)
 
     @staticmethod
-    def thread_forward_transaction(self, url, transaction):
+    def thread_forward_transaction(url, transaction,):
         r = requests.post(url, json=transaction)
 
     def new_transaction(self, trans_id, sender, recipient, amount, send_remote=True):
@@ -64,7 +65,7 @@ class Blockchain(object):
                 for x in self.nodes:
                     url = f"http://{x}/transactions/new"
                     threading_function = threading.Thread(target=self.thread_forward_transaction,
-                                                          args=(url, transaction))
+                                                          args=(url, transaction,))
                     threading_function.start()
             return self.last_block['index'] + 1
         else:

@@ -9,6 +9,18 @@ import random
 
 print(f"Arguments count: {len(sys.argv)}")
 
+# open our log file
+if len(sys.argv) > 1:
+    f = open(f"127.0.0.1:{sys.argv[1]}.txt", "w")
+    mine_log = open(f"127.0.0.0:{sys.argv[1]}_mined_blocks", "w")
+    mine_log.write(f"Index, Prev Hash, Proof, Timestamp\n")
+else:
+    f = open(f"127.0.0.1:5001.txt", "w")
+    mine_log = open(f"127.0.0.0:5001_mined_blocks", "w")
+    mine_log.write(f"Index, Prev Hash, Proof, Timestamp\n")
+
+
+
 # instantiate our node
 app = Flask(__name__)
 
@@ -42,7 +54,7 @@ def proactive_consensus():
 
 def thread_mine(current_index):
     # sleep for a random number of seconds from 10 to 60 seconds to simulate mining
-    time.sleep(random.randint(10, 60))
+    time.sleep(random.randint(1, 6))
 
     last_block = blockchain.last_block
     last_proof = last_block['proof']
@@ -60,6 +72,17 @@ def thread_mine(current_index):
         blockchain.new_transaction(1, "0", node_identifier, 1, False, )
 
         blockchain.new_block(proof, previous_hash)
+
+        # print the new block mined
+        b_index = blockchain.last_block["index"]
+        b_hash = blockchain.last_block["previous_hash"]
+        b_proof = blockchain.last_block["proof"]
+        b_timestamp = blockchain.last_block["timestamp"]
+        mine_log.write(f"{b_index}, {b_hash}, {b_proof}, {b_timestamp}\n")
+
+        for transaction in blockchain.last_block["transactions"]:
+            mine_log.write(f"\t{transaction['trans_id']}\n")
+
         # if we are proactively telling other nodes of the new chain
         if blockchain.proactive:
             proactive_consensus()
@@ -97,6 +120,20 @@ def new_transaction():
 
 
 def shutdown_server():
+    # print final chain state
+    if len(sys.argv) > 1:
+        final_state = open(f"127.0.0.1:{sys.argv[1]}_final_chain.txt", "w")
+    else:
+        final_state = open(f"127.0.0.1:5001_final_chain.txt", "w")
+    for index in blockchain.chain:
+        index_id = index.get("index")
+        hash_val = index.get("previous_hash")
+        proof = index.get("proof")
+        final_state.write(f"index: {index_id}  hash: {hash_val}  proof: {proof}\n")
+
+        for transaction in index["transactions"]:
+            final_state.write(f"\t{transaction['trans_id']}\n")
+
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
@@ -208,21 +245,19 @@ def see_transactions():
         }
     return jsonify(response), 200
 
-
-# open our log file
-if len(sys.argv) > 1:
-    f = open(f"127.0.0.1:{sys.argv[1]}.txt", "w")
-else:
-    f = open(f"127.0.0.1:5001.txt", "w")
-
-
 def print_replaced_chain():
     f.write("Chain Replaced\n")
     for index in blockchain.chain:
-        val = index.get("index")
+        index_id = index.get("index")
         hash_val = index.get("previous_hash")
         proof = index.get("proof")
-        f.write(f"\tindex: {val}  hash: {hash_val}  proof: {proof}\n")
+        f.write(f"\tindex: {index_id}  hash: {hash_val}  proof: {proof}\n")
+
+#print block id
+    #transactions in the block
+#for each transaction not in the replacement chain,
+#chain
+#transaction, value, proof,
 
 
 if __name__ == '__main__':
